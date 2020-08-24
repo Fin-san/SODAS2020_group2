@@ -84,6 +84,7 @@ def get_reviews(df):
     i = 0
     bodys = list()
     estates = list()
+    estate_ids = list()
     #Finder alle ejendomsmæglere, som har mere end 100 huse til salg
     for value in df["estateUrl"].values:
         estates.append(value[8:15])
@@ -93,13 +94,13 @@ def get_reviews(df):
         if value > 100:
             over_100[key] = value
     #Kører igennem alle links og finder tilhørende beskrivelse
-    for link in tqdm(df["estateUrl"].values):
+    for (link,house_id) in tqdm(zip(df["estateUrl"].values,df["currentArchiveId"].tolist())):
         i += 1
+        body_len_prior = len(bodys)
         try:
             response = requests.get(link)
             html = response.text
             soup = BeautifulSoup(html,"html.parser")
-            
             if link[8:15] =="home.dk": #Home
                 ids = soup.find_all("div",{"class":"text"},"p")
                 bodys.extend([x.p.text.replace("\n","").strip().lower() for x in ids[0:1] if len(x)>1])
@@ -223,15 +224,18 @@ def get_reviews(df):
                 bodys.append(np.nan)
             else:
                 bodys.append(np.nan)
-                if link[8:15] in over_100:
-                    print("Missing", link[8:15])
         except:
+            bodys.append(np.nan)
             print(link,"virkede ikke")
-            if len(bodys) != i:
-                bodys.append(i)
             continue
+        
+        body_len_after = len(bodys)
+        if body_len_after > body_len_prior:
+            estate_ids.append(house_id)
+        
+    bodys_df = pd.DataFrame({"currentArchiveId":estate_ids,"body":bodys})
     
-    return bodys
+    return bodys_df
 
 def preprocess_csv(csv):
     """
@@ -244,6 +248,6 @@ def preprocess_csv(csv):
 
 if __name__ == "__main__":
     df = preprocess_csv("house_data.csv")
-    bodys = get_reviews(df)
-    df["review"] = bodys
+    bodys_df = get_reviews(df)
+    df = df.join(bodys_df,on="currentArchiveId")
     df.to_csv("house_data.csv")
