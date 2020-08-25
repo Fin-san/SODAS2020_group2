@@ -85,6 +85,7 @@ def get_reviews(df):
     bodys = list()
     estates = list()
     estate_ids = list()
+    
     #Finder alle ejendomsmæglere, som har mere end 100 huse til salg
     for value in df["estateUrl"].values:
         estates.append(value[8:15])
@@ -93,14 +94,16 @@ def get_reviews(df):
     for key, value in numbers.items():
         if value > 100:
             over_100[key] = value
+            
     #Kører igennem alle links og finder tilhørende beskrivelse
-    for (link,house_id) in tqdm(zip(df["estateUrl"].values,df["currentArchiveId"].tolist())):
+    for link in tqdm(df["estateUrl"].values):
         i += 1
         body_len_prior = len(bodys)
         try:
             response = requests.get(link)
             html = response.text
             soup = BeautifulSoup(html,"html.parser")
+            
             if link[8:15] =="home.dk": #Home
                 ids = soup.find_all("div",{"class":"text"},"p")
                 bodys.extend([x.p.text.replace("\n","").strip().lower() for x in ids[0:1] if len(x)>1])
@@ -117,9 +120,8 @@ def get_reviews(df):
                 ids = soup.find_all("div",{"id":"case_content"})
                 bodys.extend([cla.text.replace("\n","").strip().lower() for cla in ids[0:1] if len(cla)>1])
             elif link[8:15] == "www.lok": #Lokalbolig
-                ids = soup.find_all("p")
-                loka = [lok.text.replace("\n","").strip().lower() for lok in ids if len(lok.text)>100]
-                bodys.extend([''.join(loka)])
+                ids = soup.find_all("div",{"class":"css-s7itso eknr0ef1"})
+                bodys.extend([lok.text.replace("\n","").strip() for lok in ids[0:1] if len(lok)>1])
             elif link[8:15] == "www.edc": #EDC Bolig
                 ids = soup.find_all("div",{"class":"description"})
                 bodys.extend([edc.text.replace("\n","").strip().lower() for edc in ids[0:1] if len(edc)>1])
@@ -230,9 +232,18 @@ def get_reviews(df):
             continue
         
         body_len_after = len(bodys)
-        if body_len_after > body_len_prior:
-            estate_ids.append(house_id)
+        fixed_change = body_len_prior + 1
         
+        try:
+            bodys = bodys[0:fixed_change]
+        except:
+            None
+            
+        if body_len_after == body_len_prior + 1:
+            estate_ids.append(df[df["estateUrl"]==link]["currentArchiveId"].values[0])
+    
+    print(len(estate_ids))
+    print(len(bodys))
     bodys_df = pd.DataFrame({"currentArchiveId":estate_ids,"body":bodys})
     
     return bodys_df
@@ -247,7 +258,7 @@ def preprocess_csv(csv):
     return df
 
 if __name__ == "__main__":
-    df = preprocess_csv("house_data.csv")
+    df = preprocess_csv("house_data_final.csv")
     bodys_df = get_reviews(df)
-    df = df.join(bodys_df,on="currentArchiveId")
-    df.to_csv("house_data.csv")
+    #df = df.join(bodys_df,on="currentArchiveId")
+    #df.to_csv("house_data.csv")
