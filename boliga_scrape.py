@@ -260,5 +260,5 @@ def preprocess_csv(csv):
 if __name__ == "__main__":
     df = preprocess_csv("house_data_final.csv")
     bodys_df = get_reviews(df)
-    #df = df.join(bodys_df,on="currentArchiveId")
-    #df.to_csv("house_data.csv")
+    df = df.join(bodys_df,on="currentArchiveId")
+    df.to_csv("house_data_final.csv")
