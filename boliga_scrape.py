@@ -250,7 +250,7 @@ def get_reviews(df):
 
 def preprocess_csv(csv):
     """
-    This function loads the dataset from boliga annd preproccesses it.
+    This function loads the dataset from boliga and preproccesses it.
     """
     df = pd.read_csv(csv)
     y = np.array(df["price"])
@@ -261,4 +261,4 @@ if __name__ == "__main__":
     df = preprocess_csv("house_data_final.csv")
     bodys_df = get_reviews(df)
     df = df.join(bodys_df,on="currentArchiveId")
-    df.to_csv("house_data_final.csv")
+    #df.to_csv("house_data_final.csv")
