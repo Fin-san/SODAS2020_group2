@@ -96,9 +96,19 @@ def get_reviews(df):
             over_100[key] = value
             
     #Kører igennem alle links og finder tilhørende beskrivelse
-    for link in tqdm(df["estateUrl"].values):
+    for link in tqdm(df["estateUrl"].values[0:35000]):
         i += 1
         body_len_prior = len(bodys)
+        
+        if link[8:15] == 'www.joh':
+            next
+        
+        
+        try: 
+            df[df["estateUrl"]==link]["currentArchiveId"].values[0]
+        except:
+            next
+        
         try:
             response = requests.get(link)
             html = response.text
@@ -158,9 +168,6 @@ def get_reviews(df):
             elif link[8:15] == "www.bol": #Bolig
                 ids = soup.find_all("div",{"class":"description col-md-16"})
                 bodys.extend([bol.text.replace("\n","").strip() for bol in ids[0:1] if len(bol)>1])
-            elif link[8:15] == 'www.joh': #Johns
-                ids = soup.find_all("div",{"class":"column"})
-                bodys.extend([john.text.replace("\n","").strip() for john in ids[0:1] if len(john)>1])
             elif link[8:15] == "racking": #Robinhus
                 ids = soup.find_all("div",{"class":"text-container"})
                 bodys.extend([robin.text.replace("\n","").strip() for robin in ids[0:1] if len(robin)>1])
@@ -179,9 +186,6 @@ def get_reviews(df):
             elif link[8:15] == "www.ber": #Bermistof
                 ids = soup.find_all("div",{"class":"column"})
                 bodys.extend([ber.text.replace("\n","").strip() for ber in ids[0:1] if len(ber)>1])
-            elif link [8:20] == 'www.carlsber': #Carlsberg Byen
-                ids = soup.find_all("div",{"itemprop":"description"})
-                bodys.extend([car.text.replace("\n","").strip() for car in ids[0:1] if len(car)>1])
             elif link[8:15] == "www.car": #Carsten Nordbo
                 ids = soup.find_all("div",{"class":"description col-md-16"})
                 bodys.extend([car.text.replace("\n","").strip() for car in ids[0:1] if len(car)>1])
@@ -226,9 +230,9 @@ def get_reviews(df):
                 bodys.append(np.nan)
             else:
                 bodys.append(np.nan)
+        
         except:
             bodys.append(np.nan)
-            print(link,"virkede ikke")
             continue
         
         body_len_after = len(bodys)
@@ -237,16 +241,23 @@ def get_reviews(df):
         try:
             bodys = bodys[0:fixed_change]
         except:
-            None
-            
+            pass
+        
         if body_len_after == body_len_prior + 1:
             estate_ids.append(df[df["estateUrl"]==link]["currentArchiveId"].values[0])
+            
+        try:
+            bodys = bodys[0:len(estate_ids)]
+        except:
+            pass
+        try:
+            estate_ids = estate_ids[0:len(bodys)]
+        except:
+            pass
     
-    print(len(estate_ids))
-    print(len(bodys))
     bodys_df = pd.DataFrame({"currentArchiveId":estate_ids,"body":bodys})
     
-    return bodys_df
+    return bodys_df, estate_ids, bodys
 
 def preprocess_csv(csv):
     """
@@ -259,6 +270,6 @@ def preprocess_csv(csv):
 
 if __name__ == "__main__":
     df = preprocess_csv("house_data_final.csv")
-    bodys_df = get_reviews(df)
-    df = df.join(bodys_df,on="currentArchiveId")
+    bodys_df,estate, bodys = get_reviews(df)
+    #df = df.join(bodys_df,on="currentArchiveId")
     #df.to_csv("house_data_final.csv")
