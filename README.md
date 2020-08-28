@@ -1,9 +1,7 @@
 <h1> SODAS2020_group2 </h1>
 
-<p>
-Exam project for group 2, SODAS 2020. This projects scrapes data from Boliga, a danish housing portal, in an attempt to predict housing prices.
-</p>
-
-
-
+Housing makes up an essential part of the aggregated danish economy as well as the individual households. For individuals housing is important because, for obvious reasons, they need a place to live, but also because a lot of Danes own their home. As an asset housing differs radically from other assets as equities, cash etc. because it is illiqiud. In 2019 the total housing supply, this is only counting livable and holiday houses, in Denmark was 615.715 and of these were only 12,8 pct. traded (Statistics Denmark, EJEN88 \& BOL101). Illiqiud assets, such as housing, are often difficult to price correctly, due to the fact not enough trades are completed, and are therefore priced inefficiently. In 2018 housing made up 44 percent of danish individuals assets and equity from housing was around one third of the total equity (Statistics Denmark, FORMUE1), this posses a problem because one would wish to determine the right price to ask before putting such an important asset on the market.
+\\
+This paper will examine how the price for currently available houses on the market is determined, and furthermore what factors are decisive for deciding which price to ask. The relevance of this topic from a Social Data Science perspectives derives from the fact, that housing in general is normal and a part of every ones live, yet it varies in many different underlying parameters that are not always tangible like size and distance to the nearest grocery shop - for instance how does a description of a nice view or a lovely location affect the price. \\
+We will through machine learning develop a model which will be able to predict the asking price for a house about to enter the market, in such a way that the price will be equal to the market price given the features of the particular house. This involves both quantitative data in terms of specific features on a given listing, but furthermore qualitative data derived from real estate agents description of the listing.
 
